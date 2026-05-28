@@ -20,6 +20,10 @@
 
     <!-- LifeOS CSS -->
     <link href="{% static 'css/lifeos.css' %}" rel="stylesheet">
+
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/icon-192.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/icon-192.png' %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% if profile and profile.dark_mode %}dark-mode{% endif %}">
