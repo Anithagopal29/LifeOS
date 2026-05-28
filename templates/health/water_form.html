@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ title }} – LifeOS{% endblock %}
+{% block content %}
+{% url 'dashboard:home' as back_url %}
+{% include 'partials/form_page.html' with form=form title=title back_url=back_url submit_label='Save' %}
+{% endblock %}

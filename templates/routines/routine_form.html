@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'routines:list' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">{{ title }}</h1>
+    <span style="width:28px;"></span>
+</header>
+
+<form method="post" class="card-lifeos" style="margin-top:18px;" id="routine-form">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group-lifeos">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+        {% if field.errors %}<div class="text-red" style="font-size:13px;">{{ field.errors|join:", " }}</div>{% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn-lifeos full">Save</button>
+
+    {% if form.instance.pk %}
+    <a href="{% url 'routines:delete' form.instance.pk %}" class="btn-lifeos danger full" style="margin-top:10px;">Delete</a>
+    {% endif %}
+</form>
+
+<style>
+    .time-picker-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 10px 0;
+    }
+
+    .time-picker-select {
+        flex: 1;
+        min-width: 70px;
+        padding: 10px 8px;
+        border: 1px solid #d4d4d4;
+        border-radius: 6px;
+        font-size: 16px;
+        background-color: #fff;
+        font-family: inherit;
+    }
+
+    .time-picker-select:focus {
+        outline: none;
+        border-color: #8b7355;
+        box-shadow: 0 0 0 2px rgba(139, 115, 85, 0.1);
+    }
+
+    .time-picker-period {
+        display: flex;
+        gap: 4px;
+        background: #f5f5f5;
+        padding: 4px;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .period-btn {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        background: transparent;
+        color: #666;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        font-family: inherit;
+    }
+
+    .period-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .period-btn.active {
+        background: #fff;
+        color: #8b7355;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 480px) {
+        .time-picker-group {
+            gap: 6px;
+        }
+
+        .time-picker-select {
+            min-width: 60px;
+            padding: 9px 6px;
+            font-size: 15px;
+        }
+
+        .period-btn {
+            padding: 7px 10px;
+            font-size: 13px;
+        }
+    }
+</style>
+
+<script>
+    // Handle AM/PM period button clicks
+    document.addEventListener('DOMContentLoaded', function() {
+        const periodBtns = document.querySelectorAll('.period-btn');
+        
+        periodBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const fieldName = this.dataset.field;
+                const period = this.dataset.period;
+                
+                // Update hidden input
+                const periodInput = document.querySelector(
+                    `input[name="${fieldName}_period"]`
+                );
+                if (periodInput) {
+                    periodInput.value = period;
+                }
+                
+                // Update button states
+                const container = this.closest('.time-picker-period');
+                if (container) {
+                    container.querySelectorAll('.period-btn').forEach(b => {
+                        b.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

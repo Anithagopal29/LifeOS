@@ -1,0 +1,24 @@
+{% load static %}
+{% url 'dashboard:home' as url_dashboard %}
+{% url 'routines:list' as url_routine %}
+{% url 'expenses:tracker' as url_expenses %}
+{% url 'accounts:profile' as url_profile %}
+
+<nav class="bottom-nav" aria-label="Primary">
+    <a href="{{ url_dashboard }}" class="nav-item {% if request.path == url_dashboard %}active{% endif %}">
+        <span class="ic"><i data-lucide="layout-grid"></i></span>
+        <span class="lbl">Dashboard</span>
+    </a>
+    <a href="{{ url_routine }}" class="nav-item {% if '/routines' in request.path %}active{% endif %}">
+        <span class="ic"><i data-lucide="list-checks"></i></span>
+        <span class="lbl">Routine</span>
+    </a>
+    <a href="{{ url_expenses }}" class="nav-item {% if '/expenses' in request.path %}active{% endif %}">
+        <span class="ic"><i data-lucide="wallet"></i></span>
+        <span class="lbl">Expenses</span>
+    </a>
+    <a href="{{ url_profile }}" class="nav-item {% if '/accounts/profile' in request.path %}active{% endif %}">
+        <span class="ic"><i data-lucide="user"></i></span>
+        <span class="lbl">Profile</span>
+    </a>
+</nav>

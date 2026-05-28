@@ -1,0 +1,34 @@
+{% load static %}
+{% comment %}
+Reusable form page. Include with:
+  {% include 'partials/form_page.html' with form=form title=title back_url=back_url submit_label='Save' %}
+Falls back gracefully if optional vars are missing.
+{% endcomment %}
+<header class="app-header">
+    <div class="left">
+        <a href="{{ back_url|default:'/' }}" class="bell" style="text-decoration:none;"><i data-lucide="arrow-left"></i></a>
+        <h1 class="greeting" style="font-size:20px;">{{ title|default:'Form' }}</h1>
+    </div>
+</header>
+
+<form method="post" enctype="multipart/form-data" class="card-lifeos" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="toast error" style="position:static;margin-bottom:14px;">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    {% for field in form %}
+    <div class="form-group-lifeos">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<div class="text-muted-2" style="font-size:12px;margin-top:4px;">{{ field.help_text }}</div>{% endif %}
+        {% if field.errors %}<div class="text-red" style="font-size:13px;margin-top:4px;">{{ field.errors|striptags }}</div>{% endif %}
+    </div>
+    {% endfor %}
+
+    <button type="submit" class="btn-lifeos">{{ submit_label|default:'Save' }}</button>
+    <a href="{{ back_url|default:'/' }}" class="btn-lifeos secondary mt-2" style="text-align:center;text-decoration:none;display:block;">Cancel</a>
+</form>

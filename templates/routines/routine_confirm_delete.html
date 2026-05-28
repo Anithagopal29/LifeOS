@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Delete Task – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'routines:list' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">Delete Task</h1>
+    <span style="width:28px;"></span>
+</header>
+
+<div class="card-lifeos" style="margin-top:18px;">
+    <p>Are you sure you want to delete <strong>{{ task.title }}</strong>?</p>
+    <p style="color:var(--ink-3); font-size:14px;">This cannot be undone.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn-lifeos danger full">Yes, Delete</button>
+    </form>
+    <a href="{% url 'routines:list' %}" class="btn-lifeos ghost full" style="margin-top:10px;">Cancel</a>
+</div>
+{% endblock %}

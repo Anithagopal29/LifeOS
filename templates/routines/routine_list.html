@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Daily Routine – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header">
+    <div class="left">
+        <div class="avatar">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="">
+            {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ display_name|default:'User' }}&background=DCE5CE&color=466038&size=80&bold=true" alt="">
+            {% endif %}
+        </div>
+        <h1 class="greeting sage">LifeOS</h1>
+    </div>
+    <button class="bell" type="button" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+    </button>
+</header>
+
+<!-- Routine progress header -->
+<section class="card-lifeos routine-header-card">
+    <div class="label">DAILY OVERVIEW</div>
+    <div class="row">
+        <span class="status">{{ status_label }}</span>
+        <span class="percent">{{ progress_percent }}%</span>
+    </div>
+    <div class="bar-track">
+        <div class="bar-fill" style="width: {{ progress_percent }}%"></div>
+    </div>
+</section>
+
+<!-- Mood + Energy -->
+<section class="card-lifeos mood-card">
+    <h4>How are you feeling?</h4>
+    <div class="mood-row">
+        {% for value, label in mood_choices %}
+        <button class="mood-option {% if mood_log.mood == value %}selected{% endif %}" data-mood="{{ value }}" type="button">
+            <span class="emoji">{{ label|slice:":2" }}</span>
+            <span class="lbl">{{ label|slice:"3:" }}</span>
+        </button>
+        {% endfor %}
+    </div>
+
+    <div class="energy-label">Energy Level</div>
+    <div class="energy-toggle">
+        {% for value, label in energy_choices %}
+        <button class="energy-btn {% if mood_log.energy == value %}active{% endif %}" data-energy="{{ value }}" type="button">{{ label }}</button>
+        {% endfor %}
+    </div>
+</section>
+
+<h2 class="section-title">Your Timeline</h2>
+
+<div class="timeline">
+    {% for task in tasks %}
+    <div class="timeline-item">
+        <button class="timeline-dot {% if task.is_completed %}completed{% endif %}" data-toggle-task="{{ task.pk }}" aria-label="Toggle complete" type="button">
+            {% if task.is_completed %}✓{% endif %}
+        </button>
+        <div class="timeline-card {% if task.is_completed %}completed{% endif %} {% if task.category %}cat-{{ task.category.color }}{% endif %}">
+            <div class="time-row">
+                <span class="time">{{ task.time_range }}</span>
+                {% if task.category %}
+                <span class="cat-tag color-{{ task.category.color }}">{{ task.category.name }}</span>
+                {% endif %}
+            </div>
+            <div class="title">
+                <a href="{% url 'routines:edit' task.pk %}" class="link-plain">{{ task.title }}</a>
+                {% if task.priority == 'high' %}
+                <span class="priority-flag"><i data-lucide="alert-circle"></i> High</span>
+                {% endif %}
+            </div>
+            {% if task.notes %}
+            <div class="note">"{{ task.notes }}"</div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <div class="icon"><i data-lucide="calendar-clock"></i></div>
+        <div class="label">No routine tasks for today.</div>
+        <a href="{% url 'routines:create' %}" class="btn-lifeos" style="margin-top:14px;">Add Your First Task</a>
+    </div>
+    {% endfor %}
+</div>
+
+<a href="{% url 'routines:create' %}" class="fab" aria-label="Add task">
+    <i data-lucide="plus"></i>
+</a>
+{% endblock %}

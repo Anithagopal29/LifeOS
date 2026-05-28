@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Friends Ledger – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'expenses:tracker' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">Money Lent</h1>
+    <span style="width:28px;"></span>
+</header>
+
+<a href="{% url 'expenses:create' %}?type=lent_to_friend" class="card-lifeos quick-add" style="margin-top:18px;">
+    <i data-lucide="plus"></i>
+    <span>Record Lending</span>
+</a>
+
+{% for ledger in ledgers %}
+<a href="{% url 'expenses:friend_ledger_detail' ledger.pk %}" class="card-lifeos ledger-card">
+    <div class="ledger-header">
+        <div class="ledger-avatar">
+            <span class="initial">{{ ledger.friend_name|first|upper }}</span>
+        </div>
+        <div class="ledger-info" style="flex:1;">
+            <div class="ledger-name">{{ ledger.friend_name }}</div>
+            <div class="ledger-status status-{{ ledger.status }}">
+                {% if ledger.status == 'pending' %}
+                    Awaiting Return
+                {% elif ledger.status == 'partial' %}
+                    Partially Returned
+                {% else %}
+                    Fully Returned
+                {% endif %}
+            </div>
+        </div>
+        <div class="ledger-amounts">
+            <div class="amount-label">Outstanding</div>
+            <div class="amount-value">₹{{ ledger.outstanding_amount|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="ledger-detail">
+        <span>Lent: ₹{{ ledger.total_lent|floatformat:0 }}</span>
+        <span>Returned: ₹{{ ledger.total_returned|floatformat:0 }}</span>
+    </div>
+</a>
+
+<div class="ledger-actions">
+    <a href="{% url 'expenses:friend_ledger_update' ledger.pk %}" class="btn-small primary">Update Status</a>
+    <a href="{% url 'expenses:create' %}?type=lent_to_friend&friend={{ ledger.friend_name }}" class="btn-small secondary">Log Payment</a>
+</div>
+{% empty %}
+<div class="empty-state" style="margin-top:40px;">
+    <div class="icon"><i data-lucide="hand-coins"></i></div>
+    <div class="label">No lending recorded yet.</div>
+    <a href="{% url 'expenses:create' %}?type=lent_to_friend" class="btn-lifeos" style="margin-top:16px;">Record First Lending</a>
+</div>
+{% endfor %}
+
+<style>
+    .quick-add {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        color: #8b7355;
+    }
+
+    .quick-add:active {
+        transform: scale(0.98);
+    }
+
+    .ledger-card {
+        margin-top: 12px;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .ledger-card:active {
+        transform: translateY(-2px);
+    }
+
+    .ledger-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ledger-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f5a86b 0%, #e08a5d 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .ledger-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .ledger-name {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .ledger-status {
+        font-size: 12px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        width: fit-content;
+    }
+
+    .ledger-status.status-pending {
+        background: rgba(255, 152, 0, 0.15);
+        color: #e65100;
+    }
+
+    .ledger-status.status-partial {
+        background: rgba(33, 150, 243, 0.15);
+        color: #1565c0;
+    }
+
+    .ledger-status.status-returned {
+        background: rgba(76, 175, 80, 0.15);
+        color: #2e7d32;
+    }
+
+    .ledger-amounts {
+        text-align: right;
+    }
+
+    .amount-label {
+        font-size: 11px;
+        color: #999;
+    }
+
+    .amount-value {
+        font-size: 16px;
+        font-weight: 700;
+        color: #d97706;
+    }
+
+    .ledger-detail {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .ledger-actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .btn-small {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-small.primary {
+        background: #8b7355;
+        color: #fff;
+    }
+
+    .btn-small.primary:active {
+        opacity: 0.9;
+    }
+
+    .btn-small.secondary {
+        background: #f5f5f5;
+        color: #333;
+        border: 1px solid #e0e0e0;
+    }
+
+    .btn-small.secondary:active {
+        background: #efefef;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account – LifeOS{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-logo">
+        <div class="brand">LifeOS</div>
+        <div class="tag">Start your intentional journey.</div>
+    </div>
+
+    <div class="auth-card">
+        <h2>Create your account</h2>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group-lifeos">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="text-muted-2" style="font-size:12px;margin-top:4px;">{{ field.help_text|safe }}</div>{% endif %}
+                {% if field.errors %}<div class="text-red" style="font-size:13px;margin-top:4px;">{{ field.errors|striptags }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn-lifeos">Create Account</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

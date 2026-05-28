@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Friend Savings – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'expenses:tracker' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">Friend Savings</h1>
+    <span style="width:28px;"></span>
+</header>
+
+<a href="{% url 'expenses:create' %}?type=friend_savings_deposit" class="card-lifeos quick-add" style="margin-top:18px;">
+    <i data-lucide="plus"></i>
+    <span>Add Deposit</span>
+</a>
+
+<!-- Summary Card -->
+<section class="card-lifeos summary-card">
+    <div class="summary-label">Total Held</div>
+    <div class="summary-amount">
+        ₹{% widthratio total_friend_savings 1 1|floatformat:2 as ts %}{{ ts }}
+    </div>
+    <div class="summary-meta">{{ active_savings_count }} friend{{ active_savings_count|pluralize }}</div>
+</section>
+
+{% for savings in savings_list %}
+<a href="{% url 'expenses:friend_savings_detail' savings.pk %}" class="card-lifeos savings-card">
+    <div class="savings-header">
+        <div class="savings-avatar color-mint">
+            <span class="initial">{{ savings.friend_name|first|upper }}</span>
+        </div>
+        <div class="savings-info" style="flex:1;">
+            <div class="savings-name">{{ savings.friend_name }}</div>
+            <div class="savings-meta">Deposited: ₹{{ savings.total_deposited|floatformat:0 }}</div>
+        </div>
+        <div class="savings-balance {% if savings.current_balance > 0 %}positive{% endif %}">
+            <div class="balance-label">Balance</div>
+            <div class="balance-amount">₹{{ savings.current_balance|floatformat:2 }}</div>
+        </div>
+    </div>
+    <div class="savings-footer">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%; background: #4CAF50;"></div>
+        </div>
+        <div class="progress-info">
+            <span>Withdrawn: ₹{{ savings.total_withdrawn|floatformat:0 }}</span>
+            <span>Status: {% if savings.has_balance %}Active{% else %}Settled{% endif %}</span>
+        </div>
+    </div>
+</a>
+
+<div class="savings-actions">
+    <a href="{% url 'expenses:friend_savings_update' savings.pk %}" class="btn-small deposit">Deposit / Withdraw</a>
+</div>
+{% empty %}
+<div class="empty-state" style="margin-top:40px;">
+    <div class="icon"><i data-lucide="piggy-bank"></i></div>
+    <div class="label">No friend savings yet.</div>
+    <a href="{% url 'expenses:create' %}?type=friend_savings_deposit" class="btn-lifeos" style="margin-top:16px;">Record First Deposit</a>
+</div>
+{% endfor %}
+
+<style>
+    .quick-add {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        color: #4caf50;
+    }
+
+    .quick-add:active {
+        transform: scale(0.98);
+    }
+
+    .summary-card {
+        margin-top: 12px;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .summary-label {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 8px;
+    }
+
+    .summary-amount {
+        font-size: 32px;
+        font-weight: 700;
+        color: #4caf50;
+        margin-bottom: 8px;
+    }
+
+    .summary-meta {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .savings-card {
+        margin-top: 12px;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .savings-card:active {
+        transform: translateY(-2px);
+    }
+
+    .savings-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .savings-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 18px;
+    }
+
+    .savings-avatar.color-mint {
+        background: linear-gradient(135deg, #81c784 0%, #66bb6a 100%);
+    }
+
+    .savings-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .savings-name {
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .savings-meta {
+        font-size: 12px;
+        color: #999;
+    }
+
+    .savings-balance {
+        text-align: right;
+    }
+
+    .savings-balance.positive {
+        color: #4caf50;
+    }
+
+    .balance-label {
+        font-size: 11px;
+        color: #999;
+    }
+
+    .balance-amount {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .savings-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+    }
+
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .savings-actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .btn-small {
+        flex: 1;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-small.deposit {
+        background: #4caf50;
+        color: #fff;
+    }
+
+    .btn-small.deposit:active {
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}

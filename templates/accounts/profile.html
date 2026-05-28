@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load expense_extras %}
+{% load static %}
+
+{% block title %}Profile – LifeOS{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="app-header">
+    <div class="left">
+        <a href="{% url 'dashboard:home' %}" class="bell" style="text-decoration:none;"><i data-lucide="arrow-left"></i></a>
+        <h1 class="greeting sage" style="margin:0 auto;">Profile</h1>
+    </div>
+    <button class="bell" type="button" aria-label="Settings"><i data-lucide="settings"></i></button>
+</header>
+
+<!-- Profile header -->
+<div class="profile-header">
+    <div class="avatar-large">
+        {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="">
+        {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ display_name|default:'User' }}&background=DCE5CE&color=466038&size=180&bold=true" alt="">
+        {% endif %}
+    </div>
+    <div class="profile-name">{{ profile.full_name|default:profile.username }}</div>
+    <div class="profile-bio">{{ profile.bio }}</div>
+    <span class="joined-pill">Joined {{ profile.date_joined|date:'F Y' }}</span>
+</div>
+
+<!-- Personal Goals -->
+<div class="goals-section mb-2">
+    <div class="label">Personal Goals</div>
+    <div class="goal-pills">
+        <span class="goal-pill"><i data-lucide="wallet" style="width:15px;height:15px;"></i> Budget: ₹{{ profile.monthly_budget|floatformat:0 }}</span>
+        <span class="goal-pill green"><i data-lucide="moon" style="width:15px;height:15px;"></i> Sleep: {{ profile.sleep_target_hours|floatformat:0 }}h</span>
+        <span class="goal-pill cream"><i data-lucide="droplet" style="width:15px;height:15px;"></i> Water: {{ profile.water_target_liters|floatformat:1 }}L</span>
+        <span class="goal-pill cream"><i data-lucide="check-check" style="width:15px;height:15px;"></i> Routine: {{ profile.routine_target_percent }}%</span>
+        <span class="goal-pill green"><i data-lucide="activity" style="width:15px;height:15px;"></i> Health: {{ profile.health_status }}</span>
+    </div>
+</div>
+
+<!-- Stats 2x2 -->
+<div class="stat-grid-2x2">
+    <div class="stat-box">
+        <div class="ic"><i data-lucide="clock"></i></div>
+        <div class="lbl">Routine</div>
+        <div class="val">{{ routine_percent }}%</div>
+    </div>
+    <div class="stat-box">
+        <div class="ic"><i data-lucide="piggy-bank"></i></div>
+        <div class="lbl">Expenses</div>
+        <div class="val">₹{{ month_expenses|floatformat:0 }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="ic"><i data-lucide="flame"></i></div>
+        <div class="lbl">Streak</div>
+        <div class="val">{{ streak }} Day{{ streak|pluralize }}</div>
+    </div>
+    <div class="stat-box">
+        <div class="ic"><i data-lucide="star"></i></div>
+        <div class="lbl">Consistency</div>
+        <div class="val">{{ consistency }}/5.0</div>
+    </div>
+</div>
+
+<!-- Settings list -->
+<div class="settings-card">
+    <div class="settings-row">
+        <span class="ic"><i data-lucide="moon"></i></span>
+        <span class="label">Dark Mode</span>
+        <label class="switch">
+            <input type="checkbox" id="dark-mode-toggle" {% if profile.dark_mode %}checked{% endif %}>
+            <span class="slider"></span>
+        </label>
+    </div>
+    <a class="settings-row" href="#edit-profile" onclick="document.getElementById('editProfile').scrollIntoView({behavior:'smooth'});return false;">
+        <span class="ic"><i data-lucide="bell"></i></span>
+        <span class="label">Notifications</span>
+        <span class="arrow"><i data-lucide="chevron-right"></i></span>
+    </a>
+    <a class="settings-row" href="#edit-profile" onclick="document.getElementById('editProfile').scrollIntoView({behavior:'smooth'});return false;">
+        <span class="ic"><i data-lucide="alarm-clock"></i></span>
+        <span class="label">Reminder Preferences</span>
+        <span class="arrow"><i data-lucide="chevron-right"></i></span>
+    </a>
+    <a class="settings-row" href="#edit-profile" onclick="document.getElementById('editProfile').scrollIntoView({behavior:'smooth'});return false;">
+        <span class="ic"><i data-lucide="user"></i></span>
+        <span class="label">Account Settings</span>
+        <span class="arrow"><i data-lucide="chevron-right"></i></span>
+    </a>
+    <a class="settings-row danger" href="{% url 'accounts:logout' %}">Logout</a>
+</div>
+
+<!-- Quote card -->
+<div class="quote-card">
+    <div class="quote-mark">99</div>
+    <div class="quote-text">"{{ profile.daily_intention }}"</div>
+</div>
+
+<!-- Edit profile / goals form -->
+<h2 class="section-title" id="editProfile">Edit Goals &amp; Preferences</h2>
+<form method="post" enctype="multipart/form-data" class="card-lifeos" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group-lifeos">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-red" style="font-size:13px;margin-top:4px;">{{ field.errors|striptags }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn-lifeos">Save Changes</button>
+</form>
+
+<a href="{% url 'routines:create' %}" class="fab" aria-label="Add"><i data-lucide="plus"></i></a>
+{% endblock %}

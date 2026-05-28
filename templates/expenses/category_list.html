@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load expense_extras %}
+{% block title %}Expense Categories – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'expenses:tracker' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">Categories</h1>
+    <a href="{% url 'expenses:category_create' %}" class="back-btn"><i data-lucide="plus"></i></a>
+</header>
+
+<div style="margin-top:18px;">
+    {% for cat in categories %}
+    <div class="category-row">
+        <div class="cat-row-header">
+            <div class="cat-icon {{ cat.color }}">
+                {% if cat.icon == 'bag' %}<i data-lucide="shopping-bag"></i>
+                {% elif cat.icon == 'utensils' %}<i data-lucide="utensils"></i>
+                {% elif cat.icon == 'car' %}<i data-lucide="car"></i>
+                {% elif cat.icon == 'home' %}<i data-lucide="home"></i>
+                {% elif cat.icon == 'cart' %}<i data-lucide="shopping-cart"></i>
+                {% elif cat.icon == 'cash' %}<i data-lucide="banknote"></i>
+                {% elif cat.icon == 'coffee' %}<i data-lucide="coffee"></i>
+                {% else %}<i data-lucide="star"></i>{% endif %}
+            </div>
+            <div>
+                <div class="cat-name">{{ cat.name }}</div>
+                <div class="cat-count">Budget: ₹{{ cat.monthly_budget|rupee }}/mo</div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <div class="icon"><i data-lucide="tags"></i></div>
+        <div class="label">No categories yet. <a href="{% url 'expenses:category_create' %}">Create one</a>.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

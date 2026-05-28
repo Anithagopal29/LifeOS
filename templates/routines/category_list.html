@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Categories – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'routines:list' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">Categories</h1>
+    <a href="{% url 'routines:category_create' %}" class="back-btn"><i data-lucide="plus"></i></a>
+</header>
+
+<div style="margin-top:18px;">
+    {% for c in categories %}
+    <div class="card-lifeos" style="display:flex; align-items:center; gap:14px; margin-bottom:10px;">
+        <span class="cat-tag color-{{ c.color }}" style="text-transform:capitalize;">{{ c.name }}</span>
+        <span style="color:var(--ink-3); font-size:13px;">{{ c.get_color_display }}</span>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <div class="icon"><i data-lucide="folder"></i></div>
+        <div class="label">No categories yet.</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

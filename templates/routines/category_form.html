@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Add Category – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'routines:categories' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">Add Category</h1>
+    <span style="width:28px;"></span>
+</header>
+
+<form method="post" class="card-lifeos" style="margin-top:18px;">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group-lifeos">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="text-red" style="font-size:13px;">{{ field.errors|join:", " }}</div>{% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn-lifeos full">Save</button>
+</form>
+{% endblock %}

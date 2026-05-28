@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'expenses:tracker' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">{{ title }}</h1>
+    <span style="width:28px;"></span>
+</header>
+
+<form method="post" class="card-lifeos" style="margin-top:18px;">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="text-red" style="font-size:13px; margin-bottom:12px;">{{ form.non_field_errors|join:", " }}</div>
+    {% endif %}
+
+    <!-- Transaction type -->
+    <div class="form-group-lifeos">
+        <label for="{{ form.transaction_type.id_for_label }}">Type</label>
+        {{ form.transaction_type }}
+    </div>
+
+    <!-- Title -->
+    <div class="form-group-lifeos">
+        <label for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {% if form.title.errors %}<div class="text-red" style="font-size:13px;">{{ form.title.errors|join:", " }}</div>{% endif %}
+    </div>
+
+    <!-- Amount -->
+    <div class="form-group-lifeos">
+        <label for="{{ form.amount.id_for_label }}">Amount (₹)</label>
+        {{ form.amount }}
+        {% if form.amount.errors %}<div class="text-red" style="font-size:13px;">{{ form.amount.errors|join:", " }}</div>{% endif %}
+    </div>
+
+    <!-- Category dropdown (expense only) -->
+    <div class="form-group-lifeos" id="category-group">
+        <label for="id_category_choice">Category</label>
+        {{ form.category_choice }}
+    </div>
+
+    <!-- Inline "Others" input (shown only when Others is picked) -->
+    <div class="form-group-lifeos" id="other-category-group" style="display:none;">
+        <label for="id_other_category_name">Enter category name</label>
+        {{ form.other_category_name }}
+    </div>
+
+    <!-- Source (income only) -->
+    <div class="form-group-lifeos" id="source-group">
+        <label for="{{ form.source.id_for_label }}">Source</label>
+        {{ form.source }}
+    </div>
+
+    <!-- Friend name (friend types only) -->
+    <div class="form-group-lifeos" id="friend-group">
+        <label for="{{ form.friend_name.id_for_label }}">Friend Name</label>
+        {{ form.friend_name }}
+    </div>
+
+    <!-- Reason (lending only) -->
+    <div class="form-group-lifeos" id="reason-group">
+        <label for="{{ form.reason.id_for_label }}">Reason</label>
+        {{ form.reason }}
+    </div>
+
+    <!-- Date + Time -->
+    <div class="form-group-lifeos">
+        <label for="{{ form.date.id_for_label }}">Date</label>
+        {{ form.date }}
+    </div>
+    <div class="form-group-lifeos">
+        <label for="{{ form.time.id_for_label }}">Time</label>
+        {{ form.time }}
+    </div>
+
+    <!-- Notes -->
+    <div class="form-group-lifeos">
+        <label for="{{ form.notes.id_for_label }}">Notes</label>
+        {{ form.notes }}
+    </div>
+
+    <button type="submit" class="btn-lifeos full">Save</button>
+    {% if form.instance.pk %}
+    <a href="{% url 'expenses:delete' form.instance.pk %}" class="btn-lifeos danger full" style="margin-top:10px;">Delete</a>
+    {% endif %}
+</form>
+
+<script>
+(function () {
+    const typeField = document.getElementById('id_transaction_type');
+    const catChoice = document.getElementById('id_category_choice');
+
+    const groups = {
+        category: document.getElementById('category-group'),
+        other:    document.getElementById('other-category-group'),
+        source:   document.getElementById('source-group'),
+        friend:   document.getElementById('friend-group'),
+        reason:   document.getElementById('reason-group'),
+    };
+
+    function show(el, on) { if (el) el.style.display = on ? '' : 'none'; }
+
+    function refresh() {
+        const t = typeField ? typeField.value : 'expense';
+
+        // Category only for expense
+        show(groups.category, t === 'expense');
+        // Inline "Others" input only for expense + Others selected
+        show(groups.other, t === 'expense' && catChoice && catChoice.value === '__others__');
+        // Source only for income
+        show(groups.source, t === 'income');
+        // Friend name for the three friend types
+        const isFriend = (t === 'lent_to_friend' || t === 'friend_savings_deposit' || t === 'friend_savings_withdraw');
+        show(groups.friend, isFriend);
+        // Reason only for lending
+        show(groups.reason, t === 'lent_to_friend');
+    }
+
+    if (typeField) typeField.addEventListener('change', refresh);
+    if (catChoice) catChoice.addEventListener('change', refresh);
+    refresh();
+})();
+</script>
+{% endblock %}

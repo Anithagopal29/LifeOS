@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load expense_extras %}
+{% load static %}
+
+{% block title %}Dashboard – LifeOS{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="app-header">
+    <div class="left">
+        <div class="avatar">
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="">
+            {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ display_name|default:'User' }}&background=DCE5CE&color=466038&size=80&bold=true" alt="">
+            {% endif %}
+        </div>
+        <h1 class="greeting">{{ greeting }}, {{ display_name }}</h1>
+    </div>
+    <button class="bell" type="button" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+    </button>
+</header>
+
+<!-- Daily Intention -->
+<section class="card-lifeos intention-card">
+    <div class="intention-label">DAILY INTENTION</div>
+    <p class="intention-quote">"{{ profile.daily_intention }}"</p>
+</section>
+
+<!-- Quick add -->
+<div class="quick-add-row">
+    <a href="{% url 'expenses:create' %}?type=expense" class="quick-pill green">
+        <span class="plus">+</span> Expense
+    </a>
+    <a href="{% url 'routines:create' %}" class="quick-pill beige">
+        <span class="plus">+</span> Task
+    </a>
+    <a href="{% url 'health:meal_create' %}" class="quick-pill grey">
+        <span class="plus">+</span> Meal
+    </a>
+</div>
+
+<h2 class="section-title">Daily Priorities</h2>
+
+<!-- Today's Tasks card with progress ring -->
+<section class="card-lifeos tasks-card">
+    <div class="left">
+        <h4>Today's Tasks</h4>
+        <div class="big-stat">{{ completed_tasks }}/{{ total_tasks }}</div>
+        <div class="sub">{{ remaining_tasks }} tasks remaining</div>
+    </div>
+    <div class="progress-ring" data-percent="{{ task_percent }}">
+        <svg viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="52" fill="none" stroke-width="10" />
+            <circle class="ring-fg" cx="60" cy="60" r="52" fill="none" stroke-width="10"
+                    stroke-dasharray="326.7" stroke-dashoffset="{{ ring_offset|default:130 }}" />
+        </svg>
+        <div class="label">{{ task_percent }}%</div>
+    </div>
+</section>
+
+<!-- Study + Spending row -->
+<div class="two-col">
+    <div class="card-lifeos stat-card">
+        <div class="label">Study Time</div>
+        <div class="value">{{ study_hours }}h</div>
+        <div class="trend"><i data-lucide="trending-up"></i> +{{ study_change_percent }}%</div>
+    </div>
+    <div class="card-lifeos stat-card">
+        <div class="label">Spending</div>
+        <div class="value">₹{{ today_spending|floatformat:0 }}</div>
+        <div class="trend {% if not within_budget %}warn{% endif %}">
+            {% if within_budget %}Within daily limit{% else %}Over daily limit{% endif %}
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title">Wellness &amp; Habits</h2>
+
+<div class="three-col">
+    <a href="{% url 'health:sleep_create' %}" class="card-lifeos wellness-tile" style="text-decoration:none;">
+        <div class="icon-circle beige"><i data-lucide="moon"></i></div>
+        <div class="value">{% if sleep_log %}{{ sleep_log.display_time }}{% else %}—{% endif %}</div>
+        <div class="label">SLEEP</div>
+    </a>
+    <a href="{% url 'health:meal_create' %}" class="card-lifeos wellness-tile" style="text-decoration:none;">
+        <div class="icon-circle green"><i data-lucide="utensils"></i></div>
+        <div class="value">{{ meals_today }}/{{ meals_goal }}</div>
+        <div class="label">MEALS</div>
+    </a>
+    <a href="{% url 'health:water_log_form' %}" class="card-lifeos wellness-tile" style="text-decoration:none;">
+        <div class="icon-circle beige"><i data-lucide="droplet"></i></div>
+        <div class="value"><span data-water-total>{{ todays_water|floatformat:1 }}</span>L</div>
+        <div class="label">HYDRATION</div>
+    </a>
+</div>
+
+<!-- Health Summary: water progress + weight -->
+<div class="two-col" style="margin-top:14px;">
+    <!-- Water progress with quick add -->
+    <div class="card-lifeos stat-card">
+        <div class="label">Water Intake</div>
+        <div class="value"><span data-water-total>{{ todays_water|floatformat:1 }}</span><span style="font-size:14px;color:var(--ink-3);"> / {{ water_target|floatformat:1 }}L</span></div>
+        <div class="bar-track" style="margin-top:10px;">
+            <div class="bar-fill" data-water-bar style="width: {{ water_percent }}%;"></div>
+        </div>
+        <button type="button" class="btn-lifeos outline" style="margin-top:12px;padding:8px 10px;font-size:13px;" data-water-add="0.25">
+            <i data-lucide="plus" style="width:14px;height:14px;"></i> Add 250ml
+        </button>
+    </div>
+    <!-- Weight summary -->
+    <a href="{% url 'health:measurement_create' %}" class="card-lifeos stat-card" style="text-decoration:none;display:block;">
+        <div class="label">Weight</div>
+        <div class="value">
+            {% if latest_measurement %}{{ latest_measurement.weight_kg|floatformat:1 }}<span style="font-size:14px;color:var(--ink-3);"> kg</span>{% else %}—{% endif %}
+        </div>
+        <div class="trend">
+            {% if weight_change != None %}
+                {% if weight_change < 0 %}<i data-lucide="trending-down"></i> {{ weight_change|floatformat:1 }} kg
+                {% elif weight_change > 0 %}<i data-lucide="trending-up"></i> +{{ weight_change|floatformat:1 }} kg
+                {% else %}— Stable{% endif %}
+            {% else %}Tap to log{% endif %}
+        </div>
+    </a>
+</div>
+
+<!-- Weekly Focus -->
+<div class="summary-header" style="margin-top:28px;">
+    <h2 class="section-title" style="margin:0;">Weekly Focus</h2>
+    <span class="tag-pill">Productivity</span>
+</div>
+
+<section class="card-lifeos focus-card">
+    <div class="focus-bars">
+        {% for d in weekly_focus %}
+        <div class="focus-bar-wrap">
+            {% if d.is_today %}<div class="label-above">T</div>{% endif %}
+            <div class="focus-bar {% if d.is_today %}highlighted{% endif %}"
+                 style="height: {% if d.percent %}{{ d.percent }}{% else %}10{% endif %}%;"></div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="focus-days">
+        {% for d in weekly_focus %}
+        <span class="{% if d.is_today %}active{% endif %}">{{ d.day }}</span>
+        {% endfor %}
+    </div>
+    <div class="focus-meta">
+        <span>Peak Focus at {{ peak_focus_label }}</span>
+        <i data-lucide="trending-up"></i>
+    </div>
+</section>
+
+<!-- Upcoming -->
+<div class="summary-header" style="margin-top:28px;">
+    <h2 class="section-title" style="margin:0;">Upcoming</h2>
+    <button class="dots-btn" aria-label="More" type="button">···</button>
+</div>
+
+{% for item in upcoming %}
+<a href="{% url 'routines:edit' item.pk %}" class="card-lifeos upcoming-item">
+    <span class="upcoming-circle"></span>
+    <div class="upcoming-info">
+        <div class="title">{{ item.title }}</div>
+        <div class="sub">
+            {% if item.date == today %}Today{% else %}{{ item.date|date:'M d' }}{% endif %} • {{ item.start_time|time:"H:i" }}{% if item.end_time %} - {{ item.end_time|time:"H:i" }}{% endif %}
+        </div>
+    </div>
+    <span class="upcoming-arrow"><i data-lucide="chevron-right"></i></span>
+</a>
+{% empty %}
+<div class="empty-state">
+    <div class="icon"><i data-lucide="calendar"></i></div>
+    <div class="label">No upcoming tasks. <a href="{% url 'routines:create' %}">Add one</a>.</div>
+</div>
+{% endfor %}
+
+<!-- Floating Action Button -->
+<a href="{% url 'routines:create' %}" class="fab" aria-label="Add">
+    <i data-lucide="plus"></i>
+</a>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Compute progress ring offset
+    document.querySelectorAll('.progress-ring').forEach(ring => {
+        const pct = parseFloat(ring.dataset.percent) || 0;
+        const fg = ring.querySelector('.ring-fg');
+        const C = 2 * Math.PI * 52; // 326.7
+        fg.setAttribute('stroke-dasharray', C);
+        fg.setAttribute('stroke-dashoffset', C * (1 - pct / 100));
+    });
+</script>
+{% endblock %}

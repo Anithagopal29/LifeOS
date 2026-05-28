@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Transactions – LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header simple">
+    <a href="{% url 'expenses:tracker' %}" class="back-btn"><i data-lucide="chevron-left"></i></a>
+    <h1 class="greeting sage" style="font-size:22px;">All Transactions</h1>
+    <a href="{% url 'expenses:create' %}" class="back-btn"><i data-lucide="plus"></i></a>
+</header>
+
+<div class="quick-add-row" style="margin-top:14px;">
+    <a href="?" class="quick-pill {% if not type_filter %}green{% else %}grey{% endif %}">All</a>
+    <a href="?type=income" class="quick-pill {% if type_filter == 'income' %}green{% else %}grey{% endif %}">Income</a>
+    <a href="?type=expense" class="quick-pill {% if type_filter == 'expense' %}green{% else %}grey{% endif %}">Expense</a>
+</div>
+
+<div style="margin-top:14px;">
+{% for tx in transactions %}
+<a href="{% url 'expenses:edit' tx.pk %}" class="card-lifeos tx-row">
+    <div class="tx-icon {% if tx.transaction_type == 'income' %}color-green{% elif tx.category %}color-{{ tx.category.color }}{% else %}color-beige{% endif %}">
+        {% if tx.transaction_type == 'income' %}
+            <i data-lucide="banknote"></i>
+        {% else %}
+            <i data-lucide="circle"></i>
+        {% endif %}
+    </div>
+    <div class="tx-info">
+        <div class="title">{{ tx.title }}</div>
+        <div class="meta">
+            {% if tx.transaction_type == 'income' %}
+                <span class="tx-tag income">INCOME</span>
+            {% elif tx.category %}
+                <span class="tx-tag color-{{ tx.category.color }}">{{ tx.category.name|upper }}</span>
+            {% endif %}
+            <span>{{ tx.date|date:"M d, Y" }}</span>
+        </div>
+    </div>
+    <div class="tx-amount {% if tx.transaction_type == 'income' %}positive{% else %}negative{% endif %}">
+        {{ tx.display_amount }}
+    </div>
+</a>
+{% empty %}
+<div class="empty-state">
+    <div class="icon"><i data-lucide="receipt"></i></div>
+    <div class="label">No transactions to show.</div>
+</div>
+{% endfor %}
+</div>
+{% endblock %}

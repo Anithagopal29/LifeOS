@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign In – LifeOS{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+    <div class="auth-logo">
+        <div class="brand">LifeOS</div>
+        <div class="tag">Living intentionally, one day at a time.</div>
+    </div>
+
+    <div class="auth-card">
+        <h2>Welcome back</h2>
+
+        {% if form.non_field_errors %}
+        <div class="toast error" style="position:static;margin-bottom:14px;">
+            Invalid username or password. Please try again.
+        </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group-lifeos">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}<div class="text-red" style="font-size:13px;margin-top:4px;">{{ field.errors|striptags }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn-lifeos">Sign In</button>
+        </form>
+
+        <div class="auth-footer">
+            New here? <a href="{% url 'accounts:register' %}">Create an account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

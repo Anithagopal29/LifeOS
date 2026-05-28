@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load expense_extras %}
+
+{% block title %}Trackers– LifeOS{% endblock %}
+
+{% block content %}
+<header class="app-header">
+    <div class="left">
+        <div class="avatar">
+            {% if profile.avatar %}
+            <img src="{{ profile.avatar.url }}" alt="">
+            {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ display_name|default:'User' }}&background=DCE5CE&color=466038&size=80&bold=true"
+                alt="">
+            {% endif %}
+        </div>
+        <h1 class="greeting">Good morning, {{ display_name }}</h1>
+    </div>
+    <button class="bell" type="button" aria-label="Notifications">
+        <i data-lucide="bell"></i>
+    </button>
+</header>
+
+<!-- Personal Balance (My Income + Friend Savings - My Expenses) -->
+<section class="card-lifeos balance-card">
+    <div class="label">PERSONAL BALANCE</div>
+    <div class="amount">₹{{ personal_balance|rupee }}</div>
+
+    <div class="balance-row">
+        <div class="balance-chip income">
+            <div class="chip-label"><i data-lucide="arrow-down"></i> Income</div>
+            <div class="chip-value">₹{{ monthly_income|rupee }}</div>
+        </div>
+        <div class="balance-chip expense">
+            <div class="chip-label"><i data-lucide="arrow-up"></i> Spending</div>
+            <div class="chip-value">₹{{ monthly_expense|rupee }}</div>
+        </div>
+    </div>
+</section>
+
+<!-- Split balances: My Balance + Friend Savings Balance -->
+<div class="split-balance-row">
+    <div class="card-lifeos split-balance">
+        <div class="split-label"><i data-lucide="wallet"></i> My Balance</div>
+        <div class="split-value">₹{{ my_balance|rupee }}</div>
+    </div>
+    <div class="card-lifeos split-balance mint">
+        <div class="split-label"><i data-lucide="piggy-bank"></i> Friend Savings</div>
+        <div class="split-value">₹{{ friend_savings_balance|rupee }}</div>
+    </div>
+</div>
+
+<!-- Total Spending -->
+<div class="split-balance-row">
+    <div class="card-lifeos split-balance">
+        <div class="split-label"><i data-lucide="trending-down"></i> Total Spending</div>
+        <div class="split-value">₹{{ total_spending|rupee }}</div>
+    </div>
+    <div class="card-lifeos split-balance">
+        <div class="split-label"><i data-lucide="hand-coins"></i> Lent Out</div>
+        <div class="split-value">₹{{ outstanding_to_me|rupee }}</div>
+    </div>
+</div>
+
+<!-- Monthly Net Balance (MY personal balance only) -->
+<section class="card-lifeos net-balance-card">
+    <div>
+        <div class="label">Monthly Net Balance</div>
+        <div class="amount">{% if net_balance >= 0 %}+{% endif %}₹{{ net_balance|rupee }}</div>
+    </div>
+    <div class="net-balance-icon">
+        <i data-lucide="trending-up"></i>
+    </div>
+</section>
+
+<!-- Money Given to Friends section -->
+<a href="{% url 'expenses:friend_ledger_list' %}" class="card-lifeos friend-ledger-card">
+    <div class="card-header">
+        <div class="card-icon color-peach">
+            <i data-lucide="hand-coins"></i>
+        </div>
+        <div>
+            <div class="card-label">Money Given to Friends</div>
+            <div class="card-amount">₹{{ total_lent_to_friends|rupee }}</div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <span class="badge pending">₹{{ outstanding_to_me|rupee }} outstanding</span>
+        <span class="badge count">{{ friend_ledgers_count }} friend{{ friend_ledgers_count|pluralize }}</span>
+    </div>
+</a>
+
+<!-- Friend Savings section -->
+<a href="{% url 'expenses:friend_savings_list' %}" class="card-lifeos friend-savings-card">
+    <div class="card-header">
+        <div class="card-icon color-mint">
+            <i data-lucide="piggy-bank"></i>
+        </div>
+        <div>
+            <div class="card-label">Friend Savings Held</div>
+            <div class="card-amount">₹{{ total_friend_savings|rupee }}</div>
+        </div>
+    </div>
+    <div class="card-footer">
+        <span class="badge info">{{ active_savings_count }} friend{{ active_savings_count|pluralize }}</span>
+    </div>
+</a>
+
+<!-- Spending Summary -->
+<div class="summary-header" style="margin-top:28px;">
+    <div>
+        <h2>Spending Summary</h2>
+        <div class="sub">{{ current_month }}</div>
+    </div>
+    <span class="tag-pill">{{ budget_used_percent }}% of budget</span>
+</div>
+
+{% for cs in category_summary %}
+<section class="card-lifeos category-row">
+    <div class="cat-row-header">
+        <div class="cat-icon color-{{ cs.category.color }}">
+            <i data-lucide="{% if cs.category.icon == 'bag' %}shopping-bag{% elif cs.category.icon == 'utensils' %}utensils{% elif cs.category.icon == 'car' %}car{% elif cs.category.icon == 'home' %}home{% elif cs.category.icon == 'cart' %}shopping-cart{% elif cs.category.icon == 'cash' %}banknote{% elif cs.category.icon == 'coffee' %}coffee{% else %}star{% endif %}"></i>
+        </div>
+        <div style="flex:1; min-width:0;">
+            <div class="cat-name">{{ cs.category.name }}</div>
+            <div class="cat-count">{{ cs.count }} transaction{{ cs.count|pluralize }}</div>
+        </div>
+        <div class="cat-amount">₹{{ cs.spent|rupee }}</div>
+    </div>
+    <div class="cat-progress-fill color-{{ cs.category.color }}" data-width="{{ cs.percent|default:0 }}"></div>
+    <div class="cat-progress-meta">
+        <span>Spent: ₹{{ cs.spent|rupee }}</span>
+        <span>Budget: ₹{{ cs.budget|rupee }}</span>
+    </div>
+</section>
+{% empty %}
+<div class="empty-state">
+    <div class="icon"><i data-lucide="wallet"></i></div>
+    <div class="label">No spending this month yet.</div>
+</div>
+{% endfor %}
+
+<!-- Recent Transactions -->
+<div class="tx-list-header">
+    <h2>Recent Transactions</h2>
+    <a href="{% url 'expenses:list' %}">View All</a>
+</div>
+
+{% for tx in recent_transactions %}
+<a href="{% url 'expenses:edit' tx.pk %}" class="card-lifeos tx-row">
+    <div class="tx-icon {% if tx.transaction_type == 'income' %}color-green{% elif tx.transaction_type == 'lent_to_friend' %}color-peach{% elif tx.transaction_type == 'friend_savings_deposit' or tx.transaction_type == 'friend_savings_withdraw' %}color-mint{% elif tx.category %}color-{{ tx.category.color }}{% else %}color-beige{% endif %}">
+        {% if tx.transaction_type == 'income' %}
+        <i data-lucide="banknote"></i>
+        {% elif tx.transaction_type == 'lent_to_friend' %}
+        <i data-lucide="hand-coins"></i>
+        {% elif tx.transaction_type == 'friend_savings_deposit' %}
+        <i data-lucide="arrow-down"></i>
+        {% elif tx.transaction_type == 'friend_savings_withdraw' %}
+        <i data-lucide="arrow-up"></i>
+        {% else %}
+        <i data-lucide="{% if tx.category.icon == 'bag' %}shopping-bag{% elif tx.category.icon == 'utensils' %}utensils{% elif tx.category.icon == 'car' %}car{% elif tx.category.icon == 'home' %}home{% elif tx.category.icon == 'cart' %}shopping-cart{% elif tx.category.icon == 'cash' %}banknote{% elif tx.category.icon == 'coffee' %}coffee{% else %}circle{% endif %}"></i>
+        {% endif %}
+    </div>
+    <div class="tx-info">
+        <div class="title">{{ tx.title }}</div>
+        <div class="meta">
+            {% if tx.transaction_type == 'income' %}
+            <span class="tx-tag income">INCOME</span>
+            {% elif tx.transaction_type == 'lent_to_friend' %}
+            <span class="tx-tag peach">LENT</span>
+            {% elif tx.transaction_type == 'friend_savings_deposit' %}
+            <span class="tx-tag mint">DEPOSIT</span>
+            {% elif tx.transaction_type == 'friend_savings_withdraw' %}
+            <span class="tx-tag mint">WITHDRAW</span>
+            {% elif tx.custom_category %}
+            <span class="tx-tag color-beige">{{ tx.custom_category|upper }}</span>
+            {% elif tx.category %}
+            <span class="tx-tag color-{{ tx.category.color }}">{{ tx.category.name|upper }}</span>
+            {% endif %}
+            <span>{{ tx.date|date:"M d" }}{% if tx.time %}, {{ tx.time|time:"g:i A" }}{% endif %}</span>
+        </div>
+    </div>
+    <div class="tx-amount {% if tx.transaction_type == 'income' or tx.transaction_type == 'friend_savings_deposit' %}positive{% else %}negative{% endif %}">
+        {{ tx.display_amount }}
+    </div>
+</a>
+{% empty %}
+<div class="empty-state">
+    <div class="icon"><i data-lucide="receipt"></i></div>
+    <div class="label">No transactions yet.</div>
+</div>
+{% endfor %}
+
+<a href="{% url 'expenses:create' %}" class="fab" aria-label="Add transaction">
+    <i data-lucide="plus"></i>
+</a>
+
+<style>
+    .friend-ledger-card,
+    .friend-savings-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        margin-top: 16px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .friend-ledger-card:hover,
+    .friend-savings-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+    .card-header { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .card-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; font-size: 24px;
+    }
+    .card-label { font-size: 12px; color: var(--ink-3); margin-bottom: 4px; }
+    .card-amount { font-size: 20px; font-weight: 700; font-family: var(--font-display); color: var(--ink); }
+    .card-footer { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .badge { font-size: 11px; padding: 4px 8px; border-radius: var(--r-sm); font-weight: 600; white-space: nowrap; }
+    .badge.pending { background: var(--peach-bg); color: var(--brown); }
+    .badge.info { background: var(--sage-pale); color: var(--sage-dark); }
+    .badge.count { background: var(--surface-2); color: var(--ink-2); }
+</style>
+<script>
+    document.querySelectorAll('.cat-progress-fill').forEach((el) => {
+        const width = el.dataset.width || 0;
+        el.style.width = width + '%';
+    });
+</script>
+{% endblock %}
